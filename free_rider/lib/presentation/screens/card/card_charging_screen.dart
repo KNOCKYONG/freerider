@@ -10,6 +10,7 @@ import '../../../data/providers/card_provider.dart';
 import '../../../data/models/card_model.dart';
 import '../../../services/payment/mobile_pay_service.dart';
 import '../../widgets/common/primary_button.dart';
+import 'bank_transfer_screen.dart';
 
 class CardChargingScreen extends ConsumerStatefulWidget {
   const CardChargingScreen({super.key});
@@ -26,6 +27,7 @@ class _CardChargingScreenState extends ConsumerState<CardChargingScreen>
   bool _isCharging = false;
   bool _chargeComplete = false;
   bool _useMobilePay = false;
+  bool _mobilePayAvailable = false;
 
   @override
   void initState() {
@@ -38,6 +40,27 @@ class _CardChargingScreenState extends ConsumerState<CardChargingScreen>
       vsync: this,
       duration: const Duration(milliseconds: 500),
     );
+    _checkMobilePayAvailability();
+  }
+
+  Future<void> _checkMobilePayAvailability() async {
+    try {
+      final isAvailable = await _mobilePayService.isAvailable();
+      if (mounted) {
+        setState(() {
+          _mobilePayAvailable = isAvailable;
+          _useMobilePay = isAvailable; // Default to mobile pay if available
+        });
+      }
+    } catch (e) {
+      // Mobile pay not available
+      if (mounted) {
+        setState(() {
+          _mobilePayAvailable = false;
+          _useMobilePay = false;
+        });
+      }
+    }
   }
 
   @override
@@ -282,16 +305,62 @@ class _CardChargingScreenState extends ConsumerState<CardChargingScreen>
             
             const SizedBox(height: AppSpacing.xl),
             
+            // Payment Method Selection (if mobile pay is available)
+            if (_mobilePayAvailable) ...[
+              _buildPaymentMethodSelection(),
+              const SizedBox(height: AppSpacing.lg),
+            ],
+            
             // Charge Button
             PrimaryButton(
               text: _isCharging 
                   ? '충전 중...'
-                  : '교통카드 충전하기',
+                  : _useMobilePay 
+                      ? '모바일 페이로 충전하기'
+                      : '교통카드 충전하기',
               onPressed: canCharge && !_isCharging ? _chargeCard : null,
               isLoading: _isCharging,
             ),
             
             const SizedBox(height: AppSpacing.md),
+            
+            // Bank Transfer Option
+            if (!_mobilePayAvailable || !_useMobilePay) ...[
+              OutlinedButton(
+                onPressed: !_isCharging ? () => _navigateToBankTransfer() : null,
+                style: OutlinedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.lg,
+                    vertical: AppSpacing.md,
+                  ),
+                  side: BorderSide(
+                    color: AppColors.primaryGreen,
+                    width: 1.5,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                  ),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.account_balance_rounded,
+                      color: AppColors.primaryGreen,
+                    ),
+                    const SizedBox(width: AppSpacing.sm),
+                    Text(
+                      '계좌이체로 충전하기',
+                      style: AppTypography.bodyLarge.copyWith(
+                        color: AppColors.primaryGreen,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: AppSpacing.md),
+            ],
             
             // Info Text
             _buildInfoSection(),
@@ -632,6 +701,126 @@ class _CardChargingScreenState extends ConsumerState<CardChargingScreen>
           color: AppColors.textSecondary,
           height: 1.5,
         ),
+      ),
+    );
+  }
+
+  Widget _buildPaymentMethodSelection() {
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.md),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            '충전 방법 선택',
+            style: AppTypography.labelMedium.copyWith(
+              color: AppColors.textSecondary,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          Row(
+            children: [
+              Expanded(
+                child: InkWell(
+                  onTap: () => setState(() => _useMobilePay = true),
+                  borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+                  child: Container(
+                    padding: const EdgeInsets.all(AppSpacing.md),
+                    decoration: BoxDecoration(
+                      color: _useMobilePay 
+                          ? AppColors.primaryGreen.withOpacity(0.1)
+                          : Colors.transparent,
+                      borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+                      border: Border.all(
+                        color: _useMobilePay 
+                            ? AppColors.primaryGreen
+                            : AppColors.border,
+                        width: _useMobilePay ? 2 : 1,
+                      ),
+                    ),
+                    child: Column(
+                      children: [
+                        Icon(
+                          Icons.phone_android_rounded,
+                          color: _useMobilePay 
+                              ? AppColors.primaryGreen
+                              : AppColors.textSecondary,
+                        ),
+                        const SizedBox(height: AppSpacing.xs),
+                        Text(
+                          '모바일 페이',
+                          style: AppTypography.bodySmall.copyWith(
+                            color: _useMobilePay 
+                                ? AppColors.primaryGreen
+                                : AppColors.textSecondary,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: AppSpacing.sm),
+              Expanded(
+                child: InkWell(
+                  onTap: () => setState(() => _useMobilePay = false),
+                  borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+                  child: Container(
+                    padding: const EdgeInsets.all(AppSpacing.md),
+                    decoration: BoxDecoration(
+                      color: !_useMobilePay 
+                          ? AppColors.primaryGreen.withOpacity(0.1)
+                          : Colors.transparent,
+                      borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+                      border: Border.all(
+                        color: !_useMobilePay 
+                            ? AppColors.primaryGreen
+                            : AppColors.border,
+                        width: !_useMobilePay ? 2 : 1,
+                      ),
+                    ),
+                    child: Column(
+                      children: [
+                        Icon(
+                          Icons.credit_card_rounded,
+                          color: !_useMobilePay 
+                              ? AppColors.primaryGreen
+                              : AppColors.textSecondary,
+                        ),
+                        const SizedBox(height: AppSpacing.xs),
+                        Text(
+                          '직접 충전',
+                          style: AppTypography.bodySmall.copyWith(
+                            color: !_useMobilePay 
+                                ? AppColors.primaryGreen
+                                : AppColors.textSecondary,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _navigateToBankTransfer() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const BankTransferScreen(),
       ),
     );
   }

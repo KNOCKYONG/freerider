@@ -84,6 +84,12 @@ dependencies:
   
   # WebSocket
   web_socket_channel: ^2.4.0
+  
+  # Advertising
+  google_mobile_ads: ^4.0.0
+  
+  # Crypto
+  crypto: ^3.0.3
 
 dev_dependencies:
   flutter_test:
