@@ -36,6 +36,8 @@ class AppConstants {
   static const int voiceDiaryMaxPoints = 20; // 음성일기 최대 20P (1회)
   static const int callMaxPoints = 20; // 전화통화 최대 20P (20분)
   static const int adMaxPoints = 500; // 광고 시청 최대 500P
+  static const int pointsPerAd = 10; // 광고 1개당 10P
+  static const int adDailyLimit = 10; // 일일 광고 시청 제한 10개
   static const int surveyMaxPoints = 100; // 설문 최대 100P (5회)
   static const int qrScanMaxPoints = 90; // QR 스캔 최대 90P (3회)
   static const int quizMaxPoints = 50; // 퀴즈 최대 50P (5문제)
