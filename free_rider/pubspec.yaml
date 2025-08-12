@@ -48,6 +48,10 @@ dependencies:
   
   # Storage
   shared_preferences: ^2.2.0
+  
+  # QR & Sharing
+  mobile_scanner: ^3.5.0
+  share_plus: ^7.2.0
   flutter_secure_storage: ^9.0.0
   hive_flutter: ^1.1.0
   
