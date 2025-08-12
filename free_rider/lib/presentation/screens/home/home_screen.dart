@@ -89,6 +89,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   
                   const SizedBox(height: AppSpacing.lg),
                   
+                  // 새로운 수익화 기능
+                  _buildRevenueSection(),
+                  
+                  const SizedBox(height: AppSpacing.lg),
+                  
                   // Ad Banner
                   _buildAdBanner(),
                   
@@ -174,34 +179,34 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             label: 'QR 스캔',
             color: AppColors.subwayBlue,
             onTap: () {
-              // TODO: Navigate to QR scanner
+              context.go('/qr-scanner');
             },
           ).animate().fadeIn(delay: 100.ms).slideX(begin: 0.2, end: 0),
           const SizedBox(width: AppSpacing.sm),
           QuickActionCard(
-            icon: Icons.play_circle_fill_rounded,
-            label: '광고 보기',
+            icon: Icons.local_offer_rounded,
+            label: '오퍼월',
             color: AppColors.rewardOrange,
             onTap: () {
-              // TODO: Navigate to ad viewer
+              Navigator.pushNamed(context, '/offerwall');
             },
           ).animate().fadeIn(delay: 200.ms).slideX(begin: 0.2, end: 0),
           const SizedBox(width: AppSpacing.sm),
           QuickActionCard(
-            icon: Icons.directions_walk_rounded,
-            label: '걷기 시작',
+            icon: Icons.delivery_dining_rounded,
+            label: '배달 캐시백',
             color: AppColors.primaryGreen,
             onTap: () {
-              // TODO: Start walking tracker
+              Navigator.pushNamed(context, '/delivery-cashback');
             },
           ).animate().fadeIn(delay: 300.ms).slideX(begin: 0.2, end: 0),
           const SizedBox(width: AppSpacing.sm),
           QuickActionCard(
-            icon: Icons.people_rounded,
-            label: '친구 초대',
+            icon: Icons.psychology_rounded,
+            label: 'AI 라벨링',
             color: AppColors.cognitiveColor,
             onTap: () {
-              // TODO: Navigate to invite friends
+              Navigator.pushNamed(context, '/ai-labeling');
             },
           ).animate().fadeIn(delay: 400.ms).slideX(begin: 0.2, end: 0),
         ],
@@ -232,6 +237,143 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         ),
       ],
     );
+  }
+
+  Widget _buildRevenueSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              '🚀 수익 창출',
+              style: AppTypography.titleLarge.copyWith(
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            TextButton(
+              onPressed: () {
+                // TODO: Navigate to earn screen
+              },
+              child: Text(
+                '더보기',
+                style: AppTypography.labelMedium.copyWith(
+                  color: AppColors.textSecondary,
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: AppSpacing.md),
+        
+        // 수익 카드들
+        SizedBox(
+          height: 120,
+          child: ListView(
+            scrollDirection: Axis.horizontal,
+            children: [
+              _buildRevenueCard(
+                title: '오퍼월',
+                subtitle: '앱설치로 최대 10,000P',
+                icon: Icons.local_offer_rounded,
+                color: AppColors.rewardOrange,
+                onTap: () => Navigator.pushNamed(context, '/offerwall'),
+              ),
+              const SizedBox(width: AppSpacing.md),
+              _buildRevenueCard(
+                title: '배달 캐시백',
+                subtitle: '주문시 최대 7% 적립',
+                icon: Icons.delivery_dining_rounded,
+                color: AppColors.primaryGreen,
+                onTap: () => Navigator.pushNamed(context, '/delivery-cashback'),
+              ),
+              const SizedBox(width: AppSpacing.md),
+              _buildRevenueCard(
+                title: 'AI 라벨링',
+                subtitle: '데이터 작업으로 150P',
+                icon: Icons.psychology_rounded,
+                color: AppColors.cognitiveColor,
+                onTap: () => Navigator.pushNamed(context, '/ai-labeling'),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildRevenueCard({
+    required String title,
+    required String subtitle,
+    required IconData icon,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return Container(
+      width: 160,
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+        border: Border.all(color: color.withOpacity(0.3)),
+        boxShadow: [
+          BoxShadow(
+            color: color.withOpacity(0.1),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+          child: Padding(
+            padding: const EdgeInsets.all(AppSpacing.md),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(
+                      icon,
+                      color: color,
+                      size: 24,
+                    ),
+                    const Spacer(),
+                    Container(
+                      width: 6,
+                      height: 6,
+                      decoration: BoxDecoration(
+                        color: color,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: AppSpacing.sm),
+                Text(
+                  title,
+                  style: AppTypography.titleSmall.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.xxs),
+                Text(
+                  subtitle,
+                  style: AppTypography.bodySmall.copyWith(
+                    color: AppColors.textSecondary,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    ).animate().fadeIn().slideX(begin: 0.2, end: 0);
   }
 
   Widget _buildAdBanner() {
